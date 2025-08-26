@@ -27,3 +27,4 @@ replay_pid*
 .idea/
 .gradle/
 gradle/
+postgres_data/

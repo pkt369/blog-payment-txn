@@ -10,7 +10,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./db-init/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -24,6 +25,8 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+    mem_limit: 8g
+    cpus: 4.0
 
   k6:
     image: grafana/k6:latest
@@ -32,7 +35,7 @@ services:
       - app
     volumes:
       - ./k6-scripts:/scripts
-    command: run /scripts/test-script.js
+#    command: run /scripts/test-script.js
 
   portainer:
     image: portainer/portainer-ce
