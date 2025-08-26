@@ -29,7 +29,7 @@ public class TransactionService {
 
         // Simulate payment processing delay for testing TPS and transaction handling
         try {
-            Thread.sleep(300); // 300ms delay
+            Thread.sleep(1000); // 1s delay
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
