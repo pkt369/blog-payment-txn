@@ -3,6 +3,8 @@ package dev.junlog.payment.txn.transaction.service;
 import dev.junlog.payment.txn.transaction.dao.Transaction;
 import dev.junlog.payment.txn.transaction.dao.TransactionStatus;
 import dev.junlog.payment.txn.transaction.dto.TransactionRequest;
+import dev.junlog.payment.txn.transaction.event.TransactionEvent;
+import dev.junlog.payment.txn.transaction.event.TransactionEventProducer;
 import dev.junlog.payment.txn.transaction.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,34 +12,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
     private final TransactionRepository transactionRepository;
+    private final TransactionEventProducer producer;
 
-    @Transactional
-    public Transaction createTransaction(TransactionRequest request) {
-        Transaction tx = Transaction.builder()
+    public String createTransaction(TransactionRequest request) {
+        TransactionEvent pending = TransactionEvent.builder()
+            .eventId(UUID.randomUUID().toString())
             .userId(request.getUserId())
             .amount(request.getAmount())
             .type(request.getType())
             .status(TransactionStatus.PENDING)
             .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
             .build();
 
-        // Simulate payment processing delay for testing TPS and transaction handling
-        try {
-            Thread.sleep(1000); // 1s delay
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        boolean success = Math.random() > 0.01; // 99%
-        tx.setStatus(success ? TransactionStatus.SUCCESS : TransactionStatus.FAILED);
-
-        return transactionRepository.save(tx);
+        producer.publish(pending);
+        return pending.getEventId();
     }
 
     @Transactional(readOnly = true)

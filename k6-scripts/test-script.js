@@ -2,14 +2,14 @@ import http from 'k6/http';
 
 export let options = {
     scenarios: {
-        tps_100: {
-            executor: 'constant-arrival-rate',
-            rate: 100, // TPS 100
-            timeUnit: '1s',
-            duration: '1m',
-            preAllocatedVUs: 50,
-            maxVUs: 200,
-        },
+        // tps_100: {
+        //     executor: 'constant-arrival-rate',
+        //     rate: 100, // TPS 100
+        //     timeUnit: '1s',
+        //     duration: '1m',
+        //     preAllocatedVUs: 50,
+        //     maxVUs: 200,
+        // },
         // tps_1000: {
         //     executor: 'constant-arrival-rate',
         //     rate: 1000, // TPS 1000
@@ -18,14 +18,14 @@ export let options = {
         //     preAllocatedVUs: 500,
         //     maxVUs: 2000,
         // },
-        // tps_2000: {
-        //     executor: 'constant-arrival-rate',
-        //     rate: 2000, // TPS 2000
-        //     timeUnit: '1s',
-        //     duration: '1m',
-        //     preAllocatedVUs: 1000,
-        //     maxVUs: 4000,
-        // },
+        tps_2000: {
+            executor: 'constant-arrival-rate',
+            rate: 2000, // TPS 2000
+            timeUnit: '1s',
+            duration: '1m',
+            preAllocatedVUs: 1000,
+            maxVUs: 4000,
+        },
     },
 };
 

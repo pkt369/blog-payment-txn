@@ -18,13 +18,9 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping
-    public ResponseEntity<TransactionResponse> createTransaction(
-        @RequestBody TransactionRequest request) {
-
-        Transaction transaction = transactionService.createTransaction(request);
-        TransactionResponse response = TransactionResponse.from(transaction);
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<String> createTransaction(@RequestBody TransactionRequest request) {
+        String eventId = transactionService.createTransaction(request);
+        return ResponseEntity.ok(eventId);
     }
 
     @GetMapping("/{id}")
