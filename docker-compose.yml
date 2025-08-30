@@ -1,7 +1,7 @@
 services:
-  postgres:
-    image: postgres:15
-    container_name: payment-postgres
+  postgres-coordinator:
+    image: citusdata/citus:12.1
+    container_name: payment-citus-coordinator
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -10,13 +10,115 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
-      - ./db-init/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres_data_coordinator:/var/lib/postgresql/data
+      - ./db-init/init-coordinator.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    shm_size: '1gb'
+    command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
+
+  postgres-worker1:
+    image: citusdata/citus:12.1
+    container_name: payment-citus-worker1
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres_data_worker1:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    shm_size: '1gb'
+    command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
+
+  postgres-worker2:
+    image: citusdata/citus:12.1
+    container_name: payment-citus-worker2
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./postgres_data_worker2:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    shm_size: '1gb'
+    command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
+
+  postgres-worker3:
+    image: citusdata/citus:12.1
+    container_name: payment-citus-worker3
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./postgres_data_worker3:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    shm_size: '1gb'
+    command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
+
+  postgres-worker4:
+    image: citusdata/citus:12.1
+    container_name: payment-citus-worker4
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - ./postgres_data_worker4:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    shm_size: '1gb'
+    command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
+
+  postgres-worker5:
+    image: citusdata/citus:12.1
+    container_name: payment-citus-worker5
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment_db
+    ports:
+      - "5437:5432"
+    volumes:
+      - ./postgres_data_worker5:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    shm_size: '1gb'
+    command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
 
   app:
     build: .
@@ -24,7 +126,13 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      - postgres-coordinator
+    environment:
+      - DB_HOST=postgres-coordinator
+      - DB_PORT=5432
+      - DB_NAME=payment_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
     mem_limit: 8g
     cpus: 4.0
 
@@ -35,7 +143,7 @@ services:
       - app
     volumes:
       - ./k6-scripts:/scripts
-#    command: run /scripts/test-script.js
+  #    command: run /scripts/test-script.js
 
   kafka:
     image: bitnami/kafka:3.7
@@ -82,5 +190,10 @@ services:
       - portainer_data:/data
 
 volumes:
-  postgres_data:
+  postgres_data_coordinator:
+  postgres_data_worker1:
+  postgres_data_worker2:
+  postgres_data_worker3:
+  postgres_data_worker4:
+  postgres_data_worker5:
   portainer_data:
