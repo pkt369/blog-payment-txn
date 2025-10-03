@@ -1,28 +1,28 @@
 services:
-  postgres-coordinator:
-    image: citusdata/citus:12.1
-    container_name: payment-citus-coordinator
+  postgres-global:
+    image: postgres:16
+    container_name: payment-postgres-global
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: payment_db
+      POSTGRES_DB: global_db
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres_data_coordinator:/var/lib/postgresql/data
-      - ./db-init/init-coordinator.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres_data_global:/var/lib/postgresql/data
+      - ./db-init/init-global.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
     shm_size: '1gb'
     command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
 
-  postgres-worker1:
-    image: citusdata/citus:12.1
-    container_name: payment-citus-worker1
+  postgres-shard1:
+    image: postgres:16
+    container_name: payment-postgres-shard1
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -31,7 +31,8 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - ./postgres_data_worker1:/var/lib/postgresql/data
+      - ./postgres_data_shard1:/var/lib/postgresql/data
+      - ./db-init/init-shard.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -40,9 +41,9 @@ services:
     shm_size: '1gb'
     command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
 
-  postgres-worker2:
-    image: citusdata/citus:12.1
-    container_name: payment-citus-worker2
+  postgres-shard2:
+    image: postgres:16
+    container_name: payment-postgres-shard2
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -51,7 +52,8 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - ./postgres_data_worker2:/var/lib/postgresql/data
+      - ./postgres_data_shard2:/var/lib/postgresql/data
+      - ./db-init/init-shard.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -60,9 +62,9 @@ services:
     shm_size: '1gb'
     command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
 
-  postgres-worker3:
-    image: citusdata/citus:12.1
-    container_name: payment-citus-worker3
+  postgres-shard3:
+    image: postgres:16
+    container_name: payment-postgres-shard3
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -71,7 +73,8 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - ./postgres_data_worker3:/var/lib/postgresql/data
+      - ./postgres_data_shard3:/var/lib/postgresql/data
+      - ./db-init/init-shard.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -80,9 +83,9 @@ services:
     shm_size: '1gb'
     command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
 
-  postgres-worker4:
-    image: citusdata/citus:12.1
-    container_name: payment-citus-worker4
+  postgres-shard4:
+    image: postgres:16
+    container_name: payment-postgres-shard4
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -91,7 +94,8 @@ services:
     ports:
       - "5436:5432"
     volumes:
-      - ./postgres_data_worker4:/var/lib/postgresql/data
+      - ./postgres_data_shard4:/var/lib/postgresql/data
+      - ./db-init/init-shard.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -100,9 +104,9 @@ services:
     shm_size: '1gb'
     command: [ "postgres", "-c", "max_connections=500", "-c", "shared_buffers=1GB" ]
 
-  postgres-worker5:
-    image: citusdata/citus:12.1
-    container_name: payment-citus-worker5
+  postgres-shard5:
+    image: postgres:16
+    container_name: payment-postgres-shard5
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -111,7 +115,8 @@ services:
     ports:
       - "5437:5432"
     volumes:
-      - ./postgres_data_worker5:/var/lib/postgresql/data
+      - ./postgres_data_shard5:/var/lib/postgresql/data
+      - ./db-init/init-shard.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -126,9 +131,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres-coordinator
+      - postgres-shard1
     environment:
-      - DB_HOST=postgres-coordinator
+      - DB_HOST=postgres-shard1
       - DB_PORT=5432
       - DB_NAME=payment_db
       - DB_USER=postgres
@@ -190,10 +195,9 @@ services:
       - portainer_data:/data
 
 volumes:
-  postgres_data_coordinator:
-  postgres_data_worker1:
-  postgres_data_worker2:
-  postgres_data_worker3:
-  postgres_data_worker4:
-  postgres_data_worker5:
+  postgres_data_shard1:
+  postgres_data_shard2:
+  postgres_data_shard3:
+  postgres_data_shard4:
+  postgres_data_shard5:
   portainer_data:

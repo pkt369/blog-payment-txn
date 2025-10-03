@@ -1,7 +1,7 @@
 package dev.junlog.payment.txn.user.repository;
 
 import dev.junlog.payment.txn.user.dao.User;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -9,9 +9,12 @@ import java.sql.ResultSet;
 import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
 public class UserRepository {
     private final JdbcTemplate jdbcTemplate;
+
+    public UserRepository(@Qualifier("globalJdbcTemplate") JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     public void save(User user) {
         jdbcTemplate.update(
