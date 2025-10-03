@@ -23,8 +23,8 @@ export let options = {
             rate: 2000, // TPS 2000
             timeUnit: '1s',
             duration: '1m',
-            preAllocatedVUs: 1000,
-            maxVUs: 4000,
+            preAllocatedVUs: 3000,
+            maxVUs: 8000,
         },
     },
 };

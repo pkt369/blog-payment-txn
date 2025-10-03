@@ -3,7 +3,7 @@ package dev.junlog.payment.txn.transaction.repository;
 import dev.junlog.payment.txn.transaction.dao.Transaction;
 import dev.junlog.payment.txn.transaction.dao.TransactionStatus;
 import dev.junlog.payment.txn.transaction.dao.TransactionType;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -12,9 +12,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
 public class TransactionRepository {
     private final JdbcTemplate jdbcTemplate;
+
+    public TransactionRepository(@Qualifier("shardRoutingJdbcTemplate") JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
 
     public Transaction save(Transaction transaction) {
         String sql = "INSERT INTO transactions(user_id, amount, status, type, created_at, updated_at) " +
@@ -64,7 +68,6 @@ public class TransactionRepository {
         });
     }
 
-    // 상태 업데이트
     public Transaction updateStatus(Long id, TransactionStatus status) {
         String sql = "UPDATE transactions SET status = ?, updated_at = ? WHERE id = ?";
         jdbcTemplate.update(sql, status.name(), Timestamp.valueOf(java.time.LocalDateTime.now()), id);

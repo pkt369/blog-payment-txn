@@ -1,5 +1,6 @@
 package dev.junlog.payment.txn.transaction.event;
 
+import dev.junlog.payment.txn.config.ShardRoutingDataSource;
 import dev.junlog.payment.txn.transaction.dao.Transaction;
 import dev.junlog.payment.txn.transaction.dao.TransactionStatus;
 import dev.junlog.payment.txn.transaction.repository.TransactionRepository;
@@ -29,7 +30,7 @@ public class TransactionEventConsumer {
             .build();
 
         try {
-            Thread.sleep(1000); // 1s delay
+            Thread.sleep(500); // 500ms delay
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -37,6 +38,12 @@ public class TransactionEventConsumer {
         boolean success = Math.random() > 0.01; // 99%
         tx.setStatus(success ? TransactionStatus.SUCCESS : TransactionStatus.FAILED);
 
-        transactionRepository.save(tx);
+        // Todo: implement AOP
+        ShardRoutingDataSource.setShardKey(tx.getUserId(), 5);
+        try {
+            transactionRepository.save(tx);
+        } finally {
+            ShardRoutingDataSource.clear();
+        }
     }
 }

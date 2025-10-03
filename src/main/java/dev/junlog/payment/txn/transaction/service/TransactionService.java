@@ -1,5 +1,6 @@
 package dev.junlog.payment.txn.transaction.service;
 
+import dev.junlog.payment.txn.config.ShardRoutingDataSource;
 import dev.junlog.payment.txn.transaction.dao.Transaction;
 import dev.junlog.payment.txn.transaction.dao.TransactionStatus;
 import dev.junlog.payment.txn.transaction.dto.TransactionRequest;
@@ -21,6 +22,23 @@ public class TransactionService {
     private final TransactionEventProducer producer;
 
     public String createTransaction(TransactionRequest request) {
+        Transaction tx = Transaction.builder()
+            .userId(request.getUserId())
+            .amount(request.getAmount())
+            .type(request.getType())
+            .status(TransactionStatus.PENDING)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
+
+        // Todo: implement AOP
+        ShardRoutingDataSource.setShardKey(request.getUserId(), 5);
+        try {
+            transactionRepository.save(tx);
+        } finally {
+            ShardRoutingDataSource.clear();
+        }
+
         TransactionEvent pending = TransactionEvent.builder()
             .eventId(UUID.randomUUID().toString())
             .userId(request.getUserId())
